@@ -76,6 +76,10 @@ The development environment includes `pytest` for testing and `ruff` for linting
   nix run .#run-from-requirements-install
   ```
 
+### Runtime Arguments Rules
+
+- If you need a URL argument to test the functionality, use "https://www.youtube.com/watch?v=CGMTguMGPt0"
+
 ## Commit Rule
 
 - This project uses gitflow.
