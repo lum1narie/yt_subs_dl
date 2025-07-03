@@ -1,5 +1,6 @@
 from datetime import datetime
 from unittest.mock import patch
+from typing import Any, Dict, List
 from yt_subs_dl import (
     parse_srt_timestamp,
     format_srt_content,
@@ -9,16 +10,16 @@ from yt_subs_dl import (
 )
 
 
-def test_parse_srt_timestamp():
+def test_parse_srt_timestamp() -> None:
     """Tests the parsing of SRT timestamp strings."""
     assert parse_srt_timestamp("00:00:01,123") == datetime.strptime(
         "00:00:01.123", "%H:%M:%S.%f"
     )
 
 
-def test_format_srt_content_cjk():
+def test_format_srt_content_cjk() -> None:
     """Tests formatting of SRT content for CJK languages."""
-    srt_content = """
+    srt_content: str = """
 1
 00:00:00,000 --> 00:00:02,000
 こんにちは
@@ -31,13 +32,13 @@ def test_format_srt_content_cjk():
 00:00:10,000 --> 00:00:12,000
 元気ですか
 """
-    expected = "こんにちは世界\n元気ですか"
+    expected: str = "こんにちは世界\n元気ですか"
     assert format_srt_content(srt_content, 5.0, "ja") == expected
 
 
-def test_format_srt_content_other_lang():
+def test_format_srt_content_other_lang() -> None:
     """Tests formatting of SRT content for non-CJK languages."""
-    srt_content = """
+    srt_content: str = """
 1
 00:00:00,000 --> 00:00:02,000
 Hello
@@ -50,13 +51,13 @@ world
 00:00:10,000 --> 00:00:12,000
 How are you
 """
-    expected = "Hello world\nHow are you"
+    expected: str = "Hello world\nHow are you"
     assert format_srt_content(srt_content, 5.0, "en") == expected
 
 
-def test_format_srt_content_no_newline():
+def test_format_srt_content_no_newline() -> None:
     """Tests that no newline is added if the time threshold is not met."""
-    srt_content = """
+    srt_content: str = """
 1
 00:00:00,000 --> 00:00:02,000
 First part
@@ -65,13 +66,13 @@ First part
 00:00:03,000 --> 00:00:05,000
 Second part
 """
-    expected = "First part Second part"
+    expected: str = "First part Second part"
     assert format_srt_content(srt_content, 2.0, "en") == expected
 
 
-def test_select_language_priority():
+def test_select_language_priority() -> None:
     """Tests the language selection logic."""
-    mock_info = {
+    mock_info: Dict[str, Any] = {
         "subtitles": {"ja": [{}], "de": [{}]},
         "automatic_captions": {"en": [{}], "de": [{}], "ja": [{}]},
         "language": "de",
@@ -87,31 +88,31 @@ def test_select_language_priority():
 
 
 @patch("yt_dlp.YoutubeDL")
-def test_get_video_info(mock_yt_dlp):
+def test_get_video_info(mock_yt_dlp: Any) -> None:
     """Tests the retrieval of video info."""
-    mock_instance = mock_yt_dlp.return_value.__enter__.return_value
+    mock_instance: Any = mock_yt_dlp.return_value.__enter__.return_value
     mock_instance.extract_info.return_value = {"id": "test_id"}
-    info = get_video_info("some_url")
+    info: Dict[str, Any] = get_video_info("some_url")
     assert info["id"] == "test_id"
 
 
 @patch("requests.get")
 @patch("yt_dlp.YoutubeDL")
-def test_get_srt_content(mock_yt_dlp, mock_requests_get):
+def test_get_srt_content(mock_yt_dlp: Any, mock_requests_get: Any) -> None:
     """Tests the subtitle content retrieval."""
     # Mock yt-dlp
-    mock_ydl_instance = mock_yt_dlp.return_value.__enter__.return_value
+    mock_ydl_instance: Any = mock_yt_dlp.return_value.__enter__.return_value
     mock_ydl_instance.extract_info.return_value = {
         "requested_subtitles": {"en": {"url": "http://example.com/subtitle.srt"}}
     }
 
     # Mock requests.get
-    mock_response = mock_requests_get.return_value
+    mock_response: Any = mock_requests_get.return_value
     mock_response.text = "SRT content"
     mock_response.raise_for_status.return_value = None
 
     # Call the function
-    content = get_srt_content("some_url", "en")
+    content: str = get_srt_content("some_url", "en")
 
     # Assertions
     mock_ydl_instance.extract_info.assert_called_with("some_url", download=False)

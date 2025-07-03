@@ -39,6 +39,19 @@
         runtimeInputs = [ pythonEnv ];
         text = ''exec ${pkgs.lib.getBin pythonEnv}/bin/ruff format .'';
       };
+      mdFormatWrapper = pkgs.writeShellApplication {
+        name = "mdformat-wrapper";
+        runtimeInputs = [ pkgs.markdownlint-cli2 ];
+        text = ''exec ${pkgs.lib.getBin pkgs.markdownlint-cli2}/bin/markdownlint-cli2 "**/*.md" --fix'';
+      };
+      formatAllWrapper = pkgs.writeShellApplication {
+        name = "format-all-wrapper";
+        runtimeInputs = [ ruffFormatWrapper mdFormatWrapper ];
+        text = ''
+          ${ruffFormatWrapper}/bin/ruff-format-wrapper
+          ${mdFormatWrapper}/bin/mdformat-wrapper
+        '';
+      };
       runFromRequirementsInstallWrapper = pkgs.writeShellApplication {
         name = "run-from-requirements-install-wrapper";
         runtimeInputs = [ pkgs.python3 ];
@@ -64,7 +77,7 @@
     in
     {
       devShells.${system}.default = pkgs.mkShell {
-        buildInputs = [ pythonEnv ];
+        buildInputs = [ pythonEnv pkgs.markdownlint-cli2 ];
       };
 
       formatter.${system} = pkgs.nixpkgs-fmt;
@@ -88,9 +101,17 @@
           type = "app";
           program = "${ruffLintWrapper}/bin/ruff-lint-wrapper";
         };
-        format = {
+        format-py = {
           type = "app";
           program = "${ruffFormatWrapper}/bin/ruff-format-wrapper";
+        };
+        format-md = {
+          type = "app";
+          program = "${mdFormatWrapper}/bin/mdformat-wrapper";
+        };
+        format = {
+          type = "app";
+          program = "${formatAllWrapper}/bin/format-all-wrapper";
         };
 
         # use for test requirements.txt
